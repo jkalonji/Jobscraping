@@ -12,21 +12,6 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-#result = requests.get("https://www.whitehouse.gov/briefings-statements/")
-result = requests.get("https://fr.indeed.com/Paris-(75)-Emplois-Data-Analyst")
-
-src = result.content
-soup = BeautifulSoup(src, 'lxml')
-
-# annonces = []
-# for h2_tag in soup.find_all('h2'):
-#     a_tag = h2_tag.find('a')
-#     annonces.append(a_tag.attrs['title'])
-#     # urls.append(a_tag.attrs['href'])
-# print('Voici le premier élément de la liste :')
-# print(annonces)
-
-
 
 def getCompanyNamesIndeed(soupObject):
     liste = []
@@ -35,49 +20,60 @@ def getCompanyNamesIndeed(soupObject):
         liste.append(e.text)
     return liste
 
-def getAdName(soupObject):
+def getAdNameIndeed(soupObject):
     liste = []
     for e in soupObject.find_all('h2'):
         a_tag = e.find('a')
         liste.append(a_tag.text)
     return liste
 
-def getAdLink(soupObject):
+def getAdLinkIndeed(soupObject):
     liste = []
     for e in soupObject.find_all('h2'):
         a_tag = e.find('a')
         liste.append("https://fr.indeed.com" + str(a_tag.attrs['href']))
     return liste
 
-def getAdDate(soupObject):
+def getAdDateIndeed(soupObject):
     liste = []
     for e in soupObject.find_all("span", class_="date"):
         liste.append(e.text)
     return liste
 
 
+
 if __name__ == "__main__":
     
-    result = requests.get("https://fr.indeed.com/Paris-(75)-Emplois-Data-Analyst")
-    src = result.content
-    soup = BeautifulSoup(src, 'lxml')
+    listeURLs = ["https://fr.indeed.com/Paris-(75)-Emplois-Data-Analyst", 
+                 "https://fr.indeed.com/Paris-(75)-Emplois-Data-Engineer",
+                 "https://fr.indeed.com/Paris-(75)-Emplois-Python-NLP",
+                 "https://fr.indeed.com/Paris-(75)-Emplois-Python-Fintech"]
+
+    DF = pd.DataFrame()
     
-    companyName = getCompanyNamesIndeed(soup)
-    adName      = getAdName(soup)
-    link        = getAdLink(soup)
-    date        = getAdDate(soup)
+    for address in listeURLs:
+        df = pd.DataFrame()
     
+        result = requests.get(address)
+        src = result.content
+        soup = BeautifulSoup(src, 'lxml')
+        
+        companyName = getCompanyNamesIndeed(soup)
+        adName      = getAdNameIndeed(soup)
+        link        = getAdLinkIndeed(soup)
+        date        = getAdDateIndeed(soup)
     
-    df = pd.DataFrame()
-    df['Company Name'] = companyName
-    df['Ad Name']      = adName
-    df['Ad Link']      = link
-    df['publication date'] = date
-    print(df['Ad Name'])
-    # n = len(link)
-    
-    # for i in range(n):
-    #     print(str(companyName[i]) + "\n" + str(adName[i]) + "\n" + str(link[i]))
+
+        df['Company Name']     = companyName
+        df['Ad Name']          = adName
+        df['Ad Link']          = link
+        df['publication date'] = date
+        
+        DF = pd.concat([DF, df], ignore_index=True)
+        
+
+    print(DF)
+ 
     
     
     
